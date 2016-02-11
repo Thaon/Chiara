@@ -15,10 +15,11 @@ public class MeshGenerator : MonoBehaviour {
 	List<int> m_triIndexList;
 
 	//UV mapping
-	int m_tileSize; //used to specify how big each texture-slice is
-	int m_tileXOffset; //how far it is in the tileset (multiplied by the tile size it gives us the tile we are looking for)
-	int m_tileYOffset; //same as above
+	float m_tileSize; //used to specify how big each texture-slice is
+	public int m_tileXOffset; //how far it is in the tileset (multiplied by the tile size it gives us the tile we are looking for)
+	public int m_tileYOffset; //same as above
 
+    [SerializeField]
 	List<Vector2> m_UVList;
 
 	#endregion
@@ -33,8 +34,10 @@ public class MeshGenerator : MonoBehaviour {
 
 		m_mesh = GetComponent<MeshFilter>().mesh;
 
-		//we now create the voxel
-		CreateVoxel();
+        m_tileSize = 0.5f;
+		
+        //we now create the voxel
+		CreateVoxel(0,0,0,0,0);
 
 		m_mesh.vertices = m_vertexList.ToArray();
 		m_mesh.triangles = m_triIndexList.ToArray();
@@ -45,18 +48,19 @@ public class MeshGenerator : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
 	
 	}
 
-	void CreateVoxel()
+	void CreateVoxel(int x, int y, int z, float xOffset, float yOffset)
 	{
 		//add vertices to the vertexList
 		//starting with frontal face
-		m_vertexList.Add(new Vector3 (0, 1, 0));
-		m_vertexList.Add(new Vector3 (1, 1, 0));
-		m_vertexList.Add(new Vector3 (1, 0, 0));
-		m_vertexList.Add(new Vector3 (0, 0, 0));
+		m_vertexList.Add(new Vector3 (x, y+1, z));
+		m_vertexList.Add(new Vector3 (1, y+1, z));
+		m_vertexList.Add(new Vector3 (1, 0, z));
+		m_vertexList.Add(new Vector3 (0, 0, z));
 
 
 		//add indices to the triIndexList
@@ -67,15 +71,19 @@ public class MeshGenerator : MonoBehaviour {
 		m_triIndexList.Add(1);
 		m_triIndexList.Add(2);
 		m_triIndexList.Add(3);
-		
+
+        //we now take care of the UV
+        SetUVCoords(xOffset, yOffset);
 	}
 
-	void SetUVCoords()
+	void SetUVCoords(float xOffest, float yOffset)
 	{
-		m_UVList.Add(new Vector2(0, 0.5f));
-		m_UVList.Add(new Vector2(0.5f, 0.5f));
-		m_UVList.Add(new Vector2(0.5f, 0));
-		m_UVList.Add (new Vector2 (0,0));
-	}
+        //Debug.Log(m_tileSize + ": " + xOffest + ", " + yOffset);
+        //Debug.Log((m_tileSize * m_tileXOffset) + m_tileSize);
+		m_UVList.Add(new Vector2((m_tileSize * xOffest), (m_tileSize * yOffset) + m_tileSize));
+        m_UVList.Add(new Vector2((m_tileSize * xOffest) + m_tileSize, (m_tileSize * yOffset) + m_tileSize));
+        m_UVList.Add(new Vector2((m_tileSize * xOffest), (m_tileSize * yOffset)));
+        m_UVList.Add(new Vector2((m_tileSize * xOffest) + m_tileSize, (m_tileSize * yOffset)));
+    }
 
 }
