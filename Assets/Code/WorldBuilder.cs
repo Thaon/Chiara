@@ -1,32 +1,31 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
+using System.IO;
 
 [RequireComponent(typeof(MeshGenerator))]
 
 public class WorldBuilder : MonoBehaviour {
 
     MeshGenerator m_generator;
-    string[] m_worldGrid;
+    string m_worldGrid;
+    int x, y, z;
 
 	// Use this for initialization
 	void Start ()
     {
         m_generator = GetComponent<MeshGenerator>();
 
-        m_worldGrid = new string[2];
-        m_worldGrid[0] =
+        x = 0;
+        y = 1; //we set this to 1 to place the Lerper on top of the level
+        z = 0;
+
+        m_worldGrid =
             @"
             00003
             00011
             00010
             31110
-            00000";
-        m_worldGrid[1] =
-            @"
-            00000
-            00000
-            00000
-            b0000
             00000";
 
         m_generator.WorldInit();
@@ -39,36 +38,57 @@ public class WorldBuilder : MonoBehaviour {
 
     void PopulateWorld ()
     {
-        for(int z = 0; z < 2; z++)
+        //from http://stackoverflow.com/questions/1500194/c-looping-through-lines-of-multiline-string
+        using (StringReader reader = new StringReader(m_worldGrid))
         {
-            for (int y = 0; y < 5; y++)
+            string line = string.Empty;
+            do
             {
-                for (int x = 0; x < 5; x++)
+                line = reader.ReadLine();
+                if (line != null)
                 {
-                    char tile = m_worldGrid[z][x+y];
-                    if (tile != '0')
+                    //invert the line contents (they generate a flipped mesh for some reason, this fixes it)
+                    line = Reverse(line);
+                    //create a "line" of world
+                    foreach(char tile in line)
                     {
-                        switch (tile)
-                        {
-                            //special cases here
-                            case 'b':
-                                //create the lerping gameobject
-                            break;
-
-                            //now for the voxels
-                            case '1':
-                                m_generator.CreateVoxel(x, y, z, "Grass");
-                                Debug.Log("Grass created");
-                            break;
-
-                            case '3':
-                                m_generator.CreateVoxel(x, y, z, "Dirt");
-                                Debug.Log("Dirt created");
-                                break;
-                        }
+                        CreateTile(tile);
+                        x++;
                     }
                 }
-            }
+                x = 0;
+                z++;
+            } while (line != null);
         }
 	}
+
+    void CreateTile(char tile)
+    {
+        switch (tile)
+        {
+            //special cases here
+            case 'b':
+                //create the lerping gameobject
+                break;
+
+            //now for the voxels
+            case '1':
+                m_generator.CreateVoxel(x, y, z, "Grass");
+                //Debug.Log("Grass created");
+                break;
+
+            case '3':
+                m_generator.CreateVoxel(x, y, z, "Sand");
+                //Debug.Log("Dirt created");
+                break;
+        }
+    }
+
+    //UTILITY SCRIPTS
+    public static string Reverse(string s) //from http://stackoverflow.com/questions/228038/best-way-to-reverse-a-string
+    {
+        char[] charArray = s.ToCharArray();
+        Array.Reverse(charArray);
+        return new string(charArray);
+    }
 }
