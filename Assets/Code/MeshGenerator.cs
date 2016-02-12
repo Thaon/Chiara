@@ -21,10 +21,14 @@ public class MeshGenerator : MonoBehaviour {
 
 	//UV mapping
 	float m_tileSize; //used to specify how big each texture-slice is
-	public int m_tileXOffset; //how far it is in the tileset (multiplied by the tile size it gives us the tile we are looking for)
-	public int m_tileYOffset; //same as above
+    Vector2 m_UVOffset;
+    Dictionary<string, Vector2> m_texture;
+                      
+    //public int m_tileXOffset; //how far it is in the tileset (multiplied by the tile size it gives us the tile we are looking for)
+    //public int m_tileYOffset; //same as above
+    //discarded in favour of Vector2
 
-    [SerializeField]
+    //[SerializeField]
 	List<Vector2> m_UVList;
 
 	#endregion
@@ -33,46 +37,43 @@ public class MeshGenerator : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
 	{
-		m_vertexList = new List<Vector3>();
-		m_triIndexList = new List<int>();
-		m_UVList = new List<Vector2>();
-
-		m_mesh = GetComponent<MeshFilter>().mesh;
-        m_collider = GetComponent<MeshCollider>();
-
-        m_tileSize = 0.5f;
-		
+        //first we initialize the world
+        //WorldInit();
         //we now create the voxel
-		CreateVoxel(0,0,0,0,0);
-
-		m_mesh.vertices = m_vertexList.ToArray();
-		m_mesh.triangles = m_triIndexList.ToArray();
-
-		m_mesh.uv = m_UVList.ToArray();
-
-		m_mesh.RecalculateNormals();
-        m_collider.sharedMesh = null;
-        m_collider.sharedMesh = m_mesh;
+        //CreateVoxel(0,0,0,"Sand");
+        //UpdateWorld();
     }
 
-    // Update is called once per frame
-    void Update ()
+    public void WorldInit()
     {
-	
-	}
+        m_vertexList = new List<Vector3>();
+        m_triIndexList = new List<int>();
+        m_UVList = new List<Vector2>();
+        m_texture = new Dictionary<string, Vector2>();
 
-	void CreateVoxel(int x, int y, int z, float xOffset, float yOffset)
+        m_mesh = GetComponent<MeshFilter>().mesh;
+        m_collider = GetComponent<MeshCollider>();
+
+        //we take care of the textures here
+        m_tileSize = 0.5f;
+        m_texture.Add("Grass", new Vector2(0, 0));
+        m_texture.Add("Stone", new Vector2(1, 0));
+        m_texture.Add("Dirt", new Vector2(0, 1));
+        m_texture.Add("Sand", new Vector2(1, 1));
+    }
+
+	public void CreateVoxel(int x, int y, int z, string texture)
 	{
-
-        CreateNegativeXFace(x, y, z, xOffset, yOffset);
-        CreatePositiveXFace(x, y, z, xOffset, yOffset);
-        CreateNegativeYFace(x, y, z, xOffset, yOffset);
-        CreatePositiveYFace(x, y, z, xOffset, yOffset);
-        CreateNegativeZFace(x, y, z, xOffset, yOffset);
-        CreatePositiveZFace(x, y, z, xOffset, yOffset);
+        Vector2 offset = m_texture[texture];
+        CreateNegativeXFace(x, y, z, offset);
+        CreatePositiveXFace(x, y, z, offset);
+        CreateNegativeYFace(x, y, z, offset);
+        CreatePositiveYFace(x, y, z, offset);
+        CreateNegativeZFace(x, y, z, offset);
+        CreatePositiveZFace(x, y, z, offset);
 	}
 
-    void CreateNegativeZFace(int x, int y, int z, float xOffset, float yOffset)
+    void CreateNegativeZFace(int x, int y, int z, Vector2 offset)
     {
         //add vertices to the vertexList
         m_vertexList.Add(new Vector3(x, y + 1, z));
@@ -84,50 +85,58 @@ public class MeshGenerator : MonoBehaviour {
         AddTriangleIndices();
 
         //we now take care of the UV
-        SetUVCoords(xOffset, yOffset);
+        SetUVCoords(offset);
     }
 
-    void CreatePositiveZFace(int x, int y, int z, float xOffset, float yOffset)
+    void CreatePositiveZFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + 1, y, z + 1));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x, y, z + 1));
         AddTriangleIndices();
-        SetUVCoords(xOffset, yOffset);
-    }    void CreateNegativeXFace(int x, int y, int z, float xOffset, float yOffset)
+        SetUVCoords(offset);
+    }
+
+    void CreateNegativeXFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z + 1));
         m_vertexList.Add(new Vector3(x, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x, y + 1, z));
         m_vertexList.Add(new Vector3(x, y, z));
         AddTriangleIndices();
-        SetUVCoords(xOffset, yOffset);
-    }    void CreatePositiveXFace(int x, int y, int z, float xOffset, float yOffset)
+        SetUVCoords(offset);
+    }
+
+    void CreatePositiveXFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + 1, y, z));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x + 1, y, z + 1));
         AddTriangleIndices();
-        SetUVCoords(xOffset, yOffset);
-    }    void CreateNegativeYFace(int x, int y, int z, float xOffset, float yOffset)
+        SetUVCoords(offset);
+    }
+
+    void CreateNegativeYFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z));
         m_vertexList.Add(new Vector3(x + 1, y, z));
         m_vertexList.Add(new Vector3(x + 1, y, z + 1));
         m_vertexList.Add(new Vector3(x, y, z + 1));
         AddTriangleIndices();
-        SetUVCoords(xOffset, yOffset);
-    }    void CreatePositiveYFace(int x, int y, int z, float xOffset, float yOffset)
+        SetUVCoords(offset);
+    }
+
+    void CreatePositiveYFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y + 1, z));
         m_vertexList.Add(new Vector3(x, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z));
         AddTriangleIndices();
-        SetUVCoords(xOffset, yOffset);
-    }
+        SetUVCoords(offset);
+    }
 
     void AddTriangleIndices()
     {
@@ -141,14 +150,25 @@ public class MeshGenerator : MonoBehaviour {
         m_quadNumber++;
     }
 
-    void SetUVCoords(float xOffest, float yOffset)
+    void SetUVCoords(Vector2 offset)
 	{
         //Debug.Log(m_tileSize + ": " + xOffest + ", " + yOffset);
         //Debug.Log((m_tileSize * m_tileXOffset) + m_tileSize);
-		m_UVList.Add(new Vector2((m_tileSize * xOffest), (m_tileSize * yOffset) + m_tileSize));
-        m_UVList.Add(new Vector2((m_tileSize * xOffest) + m_tileSize, (m_tileSize * yOffset) + m_tileSize));
-        m_UVList.Add(new Vector2((m_tileSize * xOffest), (m_tileSize * yOffset)));
-        m_UVList.Add(new Vector2((m_tileSize * xOffest) + m_tileSize, (m_tileSize * yOffset)));
+		m_UVList.Add(new Vector2((m_tileSize * offset.x), (m_tileSize * offset.y) + m_tileSize));
+        m_UVList.Add(new Vector2((m_tileSize * offset.x) + m_tileSize, (m_tileSize * offset.y) + m_tileSize));
+        m_UVList.Add(new Vector2((m_tileSize * offset.x) + m_tileSize, (m_tileSize * offset.y)));
+        m_UVList.Add(new Vector2((m_tileSize * offset.x), (m_tileSize * offset.y)));
     }
 
+    public void UpdateWorld()
+    {
+        m_mesh.vertices = m_vertexList.ToArray();
+        m_mesh.triangles = m_triIndexList.ToArray();
+
+        m_mesh.uv = m_UVList.ToArray();
+
+        m_mesh.RecalculateNormals();
+        m_collider.sharedMesh = null;
+        m_collider.sharedMesh = m_mesh;
+    }
 }
