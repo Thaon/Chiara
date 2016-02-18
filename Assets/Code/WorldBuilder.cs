@@ -21,12 +21,12 @@ public class WorldBuilder : MonoBehaviour {
         z = 0;
 
         m_worldGrid =
-            @"
-            00003
-            00011
-            00010
-            31110
-            00000";
+                    @"
+                    00003
+                    00011
+                    00010
+                    31110
+                    00000";
 
         m_generator.WorldInit();
         Debug.Log("World initialized");

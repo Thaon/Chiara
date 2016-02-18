@@ -73,7 +73,7 @@ public class MeshGenerator : MonoBehaviour {
         CreatePositiveZFace(x, y, z, offset);
 	}
 
-    void CreateNegativeZFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeZFace(int x, int y, int z, Vector2 offset)
     {
         //add vertices to the vertexList
         m_vertexList.Add(new Vector3(x, y + 1, z));
@@ -88,7 +88,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    void CreatePositiveZFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveZFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + 1, y, z + 1));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
@@ -98,7 +98,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    void CreateNegativeXFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeXFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z + 1));
         m_vertexList.Add(new Vector3(x, y + 1, z + 1));
@@ -108,7 +108,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    void CreatePositiveXFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveXFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + 1, y, z));
         m_vertexList.Add(new Vector3(x + 1, y + 1, z));
@@ -118,7 +118,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    void CreateNegativeYFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeYFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z));
         m_vertexList.Add(new Vector3(x + 1, y, z));
@@ -128,7 +128,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    void CreatePositiveYFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveYFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y + 1, z));
         m_vertexList.Add(new Vector3(x, y + 1, z + 1));
@@ -170,5 +170,12 @@ public class MeshGenerator : MonoBehaviour {
         m_mesh.RecalculateNormals();
         m_collider.sharedMesh = null;
         m_collider.sharedMesh = m_mesh;
+    }
+
+    public Vector2 GetAssociatedVector(string texture)
+    {
+        Vector2 associatedV2;
+        m_texture.TryGetValue(texture, out associatedV2);
+        return associatedV2;
     }
 }
