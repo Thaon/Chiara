@@ -8,16 +8,25 @@ public class ChunkBuilder : MonoBehaviour {
     MeshGenerator m_voxelGenerator;
     int[,,] m_terrainArray;
     int m_chunkSize = 16;
+    int m_chunkHeight = 255;
 
 	// Use this for initialization
-	void Start ()
+	void Awake ()
     {
         m_voxelGenerator = GetComponent<MeshGenerator>();
-        m_terrainArray = new int[m_chunkSize, m_chunkSize, m_chunkSize];
+        m_terrainArray = new int[m_chunkSize, m_chunkHeight, m_chunkSize];
 
         m_voxelGenerator.WorldInit();
+        
         PopulateTerrain();
+
+        //do terrain modifications here
+        CreatePath();
+
         DisplayTerrain();
+
+
+        //finish up the model
         m_voxelGenerator.UpdateWorld();
 	}
 	
@@ -36,8 +45,7 @@ public class ChunkBuilder : MonoBehaviour {
             for (int y = 0; y < m_terrainArray.GetLength(1); y++)
             {
                 // iterate per voxel horizontally on depth
-                for (int z = 0; z < m_terrainArray.GetLength(2);
-                z++)
+                for (int z = 0; z < m_terrainArray.GetLength(2); z++)
                 {
                     // if we are operating on 4th layer
                     if (y == 3)
@@ -64,8 +72,7 @@ public class ChunkBuilder : MonoBehaviour {
             for (int y = 0; y < m_terrainArray.GetLength(1); y++)
             {
                 // iterate per voxel horizontally on depth
-                for (int z = 0; z < m_terrainArray.GetLength(2);
-                z++)
+                for (int z = 0; z < m_terrainArray.GetLength(2); z++)
                 {
                     // if this voxel is not empty
                     if (m_terrainArray[x, y, z] != (int)m_voxelType.empty)
@@ -124,7 +131,7 @@ public class ChunkBuilder : MonoBehaviour {
                             m_voxelGenerator.CreateNegativeZFace(x, y, z, m_voxelGenerator.GetAssociatedVector(tex));
                         }
                         //positive
-                        if (z == m_terrainArray.GetLength(1) - 1 ||
+                        if (z == m_terrainArray.GetLength(2) - 1 ||
                         m_terrainArray[x, y, z + 1] == 0)
                         {
                             m_voxelGenerator.CreatePositiveZFace(x, y, z, m_voxelGenerator.GetAssociatedVector(tex));
@@ -136,5 +143,71 @@ public class ChunkBuilder : MonoBehaviour {
                 }
             }
         }
+    }
+
+    void CreatePath()
+    {
+        m_terrainArray[0, 3, 1] = (int)m_voxelType.stone;
+        m_terrainArray[0, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[0, 3, 3] = (int)m_voxelType.stone;
+        m_terrainArray[1, 3, 3] = (int)m_voxelType.stone;
+        m_terrainArray[1, 3, 4] = (int)m_voxelType.stone;
+        m_terrainArray[2, 3, 4] = (int)m_voxelType.stone;
+        m_terrainArray[3, 3, 4] = (int)m_voxelType.stone;
+        m_terrainArray[4, 3, 4] = (int)m_voxelType.stone;
+        m_terrainArray[5, 3, 4] = (int)m_voxelType.stone;
+        m_terrainArray[5, 3, 3] = (int)m_voxelType.stone;
+        m_terrainArray[5, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[6, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[7, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[8, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[9, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[10, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[11, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[12, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[13, 3, 2] = (int)m_voxelType.stone;
+        m_terrainArray[13, 3, 3] = (int)m_voxelType.stone;
+        m_terrainArray[14, 3, 3] = (int)m_voxelType.stone;
+        m_terrainArray[15, 3, 3] = (int)m_voxelType.stone;
+    }
+
+    public int GetWorldXZ()
+    {
+        return m_chunkSize;
+    }
+
+    public int GetWorldY()
+    {
+        return m_chunkHeight;
+    }
+
+    public string GetVoxelNameAtPosition(int x, int y, int z)
+    {
+        // if this voxel is not empty
+        if (m_terrainArray[x, y, z] != (int)m_voxelType.empty)
+        {
+            string tex;
+            // set texture name by value
+            switch (m_terrainArray[x, y, z])
+            {
+                case (int)m_voxelType.grass:
+                    tex = "Grass";
+                    break;
+                case (int)m_voxelType.stone:
+                    tex = "Stone";
+                    break;
+                case (int)m_voxelType.dirt:
+                    tex = "Dirt";
+                    break;
+                case (int)m_voxelType.sand:
+                    tex = "Sand";
+                    break;
+                default:
+                    tex = "Grass";
+                    break;
+            }
+            return tex;
+        }
+        else return "NULL";
     }
 }
