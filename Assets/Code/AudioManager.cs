@@ -28,14 +28,14 @@ public class AudioManager : MonoBehaviour {
     // When game object is enabled
     void OnEnable()
     {
-        //m_world.OnEventBlockDestroyed += PlayDestroyBlockSound;
-        //m_world.OnEventBlockPlaced += PlayPlaceBlockSound;
+        ChunkWorldBuilder.OnEventBlockDestroyed += PlayDestroyBlockSound;
+        ChunkWorldBuilder.OnEventBlockPlaced += PlayPlaceBlockSound;
     }
     // When game object is disabled
     void OnDisable()
     {
-        m_world.OnEventBlockDestroyed += PlayDestroyBlockSound;
-        m_world.OnEventBlockPlaced += PlayPlaceBlockSound;
+        ChunkWorldBuilder.OnEventBlockDestroyed += PlayDestroyBlockSound;
+        ChunkWorldBuilder.OnEventBlockPlaced += PlayPlaceBlockSound;
     }
 
     void PlayDestroyBlockSound(m_voxelType type)
