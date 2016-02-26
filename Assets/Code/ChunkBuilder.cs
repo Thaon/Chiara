@@ -1,19 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class ChunkBuilder : MonoBehaviour {
+//making the enum available to everybody
+public enum m_voxelType { empty, grass, stone, dirt, sand };
 
-    enum m_voxelType { empty, grass, stone, dirt, sand};
+public class ChunkBuilder : MonoBehaviour {
 
     MeshGenerator m_voxelGenerator;
     int[,,] m_terrainArray;
     int m_chunkSize = 16;
     int m_chunkHeight = 255;
+    ChunkWorldBuilder m_world;
+
+    public GameObject m_player;
 
 	// Use this for initialization
 	void Awake ()
     {
         m_voxelGenerator = GetComponent<MeshGenerator>();
+        //we now set the parent
+        m_voxelGenerator.m_parent = this;
+
         m_terrainArray = new int[m_chunkSize, m_chunkHeight, m_chunkSize];
 
         m_voxelGenerator.WorldInit();
@@ -29,6 +36,13 @@ public class ChunkBuilder : MonoBehaviour {
         //finish up the model
         m_voxelGenerator.UpdateWorld();
 	}
+
+    void Start()
+    {
+        //place the player in the middle of the chunk
+        m_player.transform.position = transform.position + new Vector3(5,5,5);
+        m_world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -209,5 +223,21 @@ public class ChunkBuilder : MonoBehaviour {
             return tex;
         }
         else return "NULL";
+    }
+
+    public void SetBlock(Vector3 index, m_voxelType voxelType)
+    {
+        if ((index.x > 0 && index.x < m_terrainArray.GetLength(0)) && (index.y > 0 && index.y < m_terrainArray.GetLength(1)) && (index.z > 0 && index.z < m_terrainArray.GetLength(2)))
+        {
+            //clear the previous mesh data
+            m_voxelGenerator.ClearPreviousData();
+            // Change the block to the required type
+            m_terrainArray[(int)index.x, (int)index.y, (int)index.z] = (int)voxelType;
+            // Create the new mesh
+            DisplayTerrain();
+            // Update the mesh data
+            m_voxelGenerator.UpdateWorld();
+            m_world.BlockChanged(voxelType);
+        }
     }
 }

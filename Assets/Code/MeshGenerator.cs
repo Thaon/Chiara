@@ -31,6 +31,8 @@ public class MeshGenerator : MonoBehaviour {
     //[SerializeField]
 	List<Vector2> m_UVList;
 
+    public ChunkBuilder m_parent;
+
 	#endregion
 
 
@@ -178,4 +180,13 @@ public class MeshGenerator : MonoBehaviour {
         m_texture.TryGetValue(texture, out associatedV2);
         return associatedV2;
     }
+
+    // Clear previous data structures used to create the mesh
+    public void ClearPreviousData()
+    {
+        m_vertexList.Clear();
+        m_triIndexList.Clear();
+        m_UVList.Clear();
+        m_quadNumber = 0;
+    }
 }
