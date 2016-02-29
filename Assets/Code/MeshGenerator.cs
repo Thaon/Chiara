@@ -164,6 +164,7 @@ public class MeshGenerator : MonoBehaviour {
 
     public void UpdateWorld()
     {
+        m_mesh.Clear();
         m_mesh.vertices = m_vertexList.ToArray();
         m_mesh.triangles = m_triIndexList.ToArray();
 
