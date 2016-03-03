@@ -5,6 +5,7 @@ public class PlayerPickAndPlace : MonoBehaviour {
 
     ChunkBuilder m_activeChunk;
 
+
 	void Start () {
 	
 	}
@@ -17,6 +18,7 @@ public class PlayerPickAndPlace : MonoBehaviour {
             if (PickThisBlock(out v, 4))
             {
                 m_activeChunk.SetBlock(v, m_voxelType.empty);
+                //create a new block
             }
         }
         else if (Input.GetButtonDown("Fire2"))
@@ -28,6 +30,17 @@ public class PlayerPickAndPlace : MonoBehaviour {
                 m_activeChunk.SetBlock(v, m_voxelType.sand);
             }
         }
+    }
+
+    public GameObject SpawnBlock(Vector3 location, string type) //FINISH THIS!!!
+    {
+        GameObject block = new GameObject();
+        block.AddComponent<MeshGenerator>();
+        MeshGenerator gen = block.GetComponent<MeshGenerator>();
+        gen.m_voxelScale = 0.5f;
+        gen.WorldInit();
+        gen.CreateVoxel((int)location.x, (int)location.y, (int)location.z, type);
+        return block;
     }
 
     bool PickThisBlock(out Vector3 v, float dist)

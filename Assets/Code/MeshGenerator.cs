@@ -15,6 +15,7 @@ public class MeshGenerator : MonoBehaviour {
 	List<Vector3> m_vertexList;
 	List<int> m_triIndexList;
     int m_quadNumber = 0;
+    public float m_voxelScale = 1;
 
     //mesh collision
     MeshCollider m_collider;
@@ -66,6 +67,9 @@ public class MeshGenerator : MonoBehaviour {
 
 	public void CreateVoxel(int x, int y, int z, string texture)
 	{
+        x *= m_voxelScale;
+        y *= m_voxelScale;
+        z *= m_voxelScale;
         Vector2 offset = m_texture[texture];
         CreateNegativeXFace(x, y, z, offset);
         CreatePositiveXFace(x, y, z, offset);
@@ -78,9 +82,9 @@ public class MeshGenerator : MonoBehaviour {
     public void CreateNegativeZFace(int x, int y, int z, Vector2 offset)
     {
         //add vertices to the vertexList
-        m_vertexList.Add(new Vector3(x, y + 1, z));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z));
-        m_vertexList.Add(new Vector3(x + 1, y, z));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z));
         m_vertexList.Add(new Vector3(x, y, z));
 
         //we now add the triangles to the indices list
@@ -92,19 +96,19 @@ public class MeshGenerator : MonoBehaviour {
 
     public void CreatePositiveZFace(int x, int y, int z, Vector2 offset)
     {
-        m_vertexList.Add(new Vector3(x + 1, y, z + 1));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x, y, z + 1));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x, y, z + m_voxelScale));
         AddTriangleIndices();
         SetUVCoords(offset);
     }
 
     public void CreateNegativeXFace(int x, int y, int z, Vector2 offset)
     {
-        m_vertexList.Add(new Vector3(x, y, z + 1));
-        m_vertexList.Add(new Vector3(x, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x, y + 1, z));
+        m_vertexList.Add(new Vector3(x, y, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z));
         m_vertexList.Add(new Vector3(x, y, z));
         AddTriangleIndices();
         SetUVCoords(offset);
@@ -112,10 +116,10 @@ public class MeshGenerator : MonoBehaviour {
 
     public void CreatePositiveXFace(int x, int y, int z, Vector2 offset)
     {
-        m_vertexList.Add(new Vector3(x + 1, y, z));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x + 1, y, z + 1));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z + m_voxelScale));
         AddTriangleIndices();
         SetUVCoords(offset);
     }
@@ -123,19 +127,19 @@ public class MeshGenerator : MonoBehaviour {
     public void CreateNegativeYFace(int x, int y, int z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z));
-        m_vertexList.Add(new Vector3(x + 1, y, z));
-        m_vertexList.Add(new Vector3(x + 1, y, z + 1));
-        m_vertexList.Add(new Vector3(x, y, z + 1));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x, y, z + m_voxelScale));
         AddTriangleIndices();
         SetUVCoords(offset);
     }
 
     public void CreatePositiveYFace(int x, int y, int z, Vector2 offset)
     {
-        m_vertexList.Add(new Vector3(x, y + 1, z));
-        m_vertexList.Add(new Vector3(x, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z + 1));
-        m_vertexList.Add(new Vector3(x + 1, y + 1, z));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z));
+        m_vertexList.Add(new Vector3(x, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z + m_voxelScale));
+        m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z));
         AddTriangleIndices();
         SetUVCoords(offset);
     }
