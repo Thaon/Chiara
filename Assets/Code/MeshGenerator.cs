@@ -40,6 +40,8 @@ public class MeshGenerator : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
 	{
+        GetComponent<MeshRenderer>().material.SetTexture("_MainTex", Resources.Load("UVTexture") as Texture);
+
         //first we initialize the world
         //WorldInit();
         //we now create the voxel
@@ -65,7 +67,7 @@ public class MeshGenerator : MonoBehaviour {
         m_texture.Add("Sand", new Vector2(1, 1));
     }
 
-	public void CreateVoxel(int x, int y, int z, string texture)
+	public void CreateVoxel(float x, float y, float z, string texture)
 	{
         x *= m_voxelScale;
         y *= m_voxelScale;
@@ -79,7 +81,7 @@ public class MeshGenerator : MonoBehaviour {
         CreatePositiveZFace(x, y, z, offset);
 	}
 
-    public void CreateNegativeZFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeZFace(float x, float y, float z, Vector2 offset)
     {
         //add vertices to the vertexList
         m_vertexList.Add(new Vector3(x, y + m_voxelScale, z));
@@ -94,7 +96,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    public void CreatePositiveZFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveZFace(float x, float y, float z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + m_voxelScale, y, z + m_voxelScale));
         m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z + m_voxelScale));
@@ -104,7 +106,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    public void CreateNegativeXFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeXFace(float x, float y, float z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z + m_voxelScale));
         m_vertexList.Add(new Vector3(x, y + m_voxelScale, z + m_voxelScale));
@@ -114,7 +116,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    public void CreatePositiveXFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveXFace(float x, float y, float z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x + m_voxelScale, y, z));
         m_vertexList.Add(new Vector3(x + m_voxelScale, y + m_voxelScale, z));
@@ -124,7 +126,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    public void CreateNegativeYFace(int x, int y, int z, Vector2 offset)
+    public void CreateNegativeYFace(float x, float y, float z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y, z));
         m_vertexList.Add(new Vector3(x + m_voxelScale, y, z));
@@ -134,7 +136,7 @@ public class MeshGenerator : MonoBehaviour {
         SetUVCoords(offset);
     }
 
-    public void CreatePositiveYFace(int x, int y, int z, Vector2 offset)
+    public void CreatePositiveYFace(float x, float y, float z, Vector2 offset)
     {
         m_vertexList.Add(new Vector3(x, y + m_voxelScale, z));
         m_vertexList.Add(new Vector3(x, y + m_voxelScale, z + m_voxelScale));

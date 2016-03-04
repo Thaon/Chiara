@@ -7,15 +7,15 @@ public enum m_voxelType { empty, grass, stone, dirt, sand };
 public class ChunkBuilder : MonoBehaviour {
 
     MeshGenerator m_voxelGenerator;
-    int[,,] m_terrainArray;
-    int m_chunkSize = 16;
-    int m_chunkHeight = 255;
-    ChunkWorldBuilder m_world;
+    public int[,,] m_terrainArray;
+    public int m_chunkSize = 16;
+    public int m_chunkHeight = 255;
+    public ChunkWorldBuilder m_world;
 
     public GameObject m_player;
 
 	// Use this for initialization
-	void Awake ()
+	public void GenerateChunk ()
     {
         m_voxelGenerator = GetComponent<MeshGenerator>();
         //we now set the parent
@@ -28,7 +28,7 @@ public class ChunkBuilder : MonoBehaviour {
         PopulateTerrain();
 
         //do terrain modifications here
-        CreatePath();
+        //CreatePath();
 
         DisplayTerrain();
 
@@ -37,17 +37,23 @@ public class ChunkBuilder : MonoBehaviour {
         m_voxelGenerator.UpdateWorld();
 	}
 
+    public void UpdateChunk(int[,,] terrain)
+    {
+        m_voxelGenerator = GetComponent<MeshGenerator>();
+        m_voxelGenerator.m_parent = this;
+        m_terrainArray = terrain;
+        m_voxelGenerator.ClearPreviousData();
+        DisplayTerrain();
+        m_voxelGenerator.UpdateWorld();
+    }
+
     void Start()
     {
-        //place the player in the middle of the chunk
-        m_player.transform.position = transform.position + new Vector3(5,5,5);
-        m_world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
-	
 	}
 
     void PopulateTerrain()
