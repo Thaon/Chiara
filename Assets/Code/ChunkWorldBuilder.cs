@@ -27,20 +27,23 @@ public class ChunkWorldBuilder : MonoBehaviour
     {
     }
 
-    public void UpdateWorld(ChunkBuilder[,] chunks)
+    public void UpdateWorld(ChunkBuilder[,] chunk)
     {
-        for (int z = 0; z < m_worldZSize; z++)
+        for (int z = 0; z < m_worldZSize; ++z)
         {
-            for (int x = 0; x < m_worldZSize; x++)
+            for (int x = 0; x < m_worldXSize; ++x)
             {
-                m_chunks[x, z].UpdateChunk(chunks[x, z].m_terrainArray);
+                m_chunks[x, z] = chunk[x, z];
+                //m_chunks[x, z].m_terrainArray = chunk[x, z].m_terrainArray;
+
+                m_chunks[x, z].UpdateChunk(chunk[x, z].m_terrainArray);
             }
         }
     }
 
     public void CreateWorld()
     {
-        m_chunks = new ChunkBuilder[m_chunkSize, m_chunkSize];
+        m_chunks = new ChunkBuilder[m_worldXSize, m_worldZSize];
         for (int z = 0; z < m_worldZSize; z++)
         {
             for (int x = 0; x < m_worldZSize; x++)

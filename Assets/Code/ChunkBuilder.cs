@@ -37,12 +37,12 @@ public class ChunkBuilder : MonoBehaviour {
         m_voxelGenerator.UpdateWorld();
 	}
 
-    public void UpdateChunk(int[,,] terrain)
+    public void UpdateChunk(int [,,] newTerrain)
     {
         m_voxelGenerator = GetComponent<MeshGenerator>();
         m_voxelGenerator.m_parent = this;
-        m_terrainArray = terrain;
         m_voxelGenerator.ClearPreviousData();
+        m_terrainArray = newTerrain;
         DisplayTerrain();
         m_voxelGenerator.UpdateWorld();
     }
@@ -233,7 +233,7 @@ public class ChunkBuilder : MonoBehaviour {
 
     public void SetBlock(Vector3 index, m_voxelType voxelType)
     {
-        if ((index.x > 0 && index.x < m_terrainArray.GetLength(0)) && (index.y > 0 && index.y < m_terrainArray.GetLength(1)) && (index.z > 0 && index.z < m_terrainArray.GetLength(2)))
+        if ((index.x >= 0 && index.x < m_terrainArray.GetLength(0)) && (index.y >= 0 && index.y < m_terrainArray.GetLength(1)) && (index.z >= 0 && index.z < m_terrainArray.GetLength(2)))
         {
             //clear the previous mesh data
             m_voxelGenerator.ClearPreviousData();

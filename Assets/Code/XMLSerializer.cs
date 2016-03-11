@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 
 public class XMLSerializer : MonoBehaviour
 {
+    static int cx, cz, x, y, z, type;
 
     void Start()
     {
@@ -16,7 +17,7 @@ public class XMLSerializer : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
         {
             //Serialize();
-            ChunkWorldBuilder world = (ChunkWorldBuilder) FindObjectOfType(typeof(ChunkWorldBuilder));
+            ChunkWorldBuilder world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
             SaveChunkToXMLFile(world, "WorldSaveTest");
         }
         if (Input.GetKeyDown(KeyCode.F2))
@@ -24,7 +25,9 @@ public class XMLSerializer : MonoBehaviour
             //Desirealize();
             ChunkWorldBuilder world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
             //world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
-            world.UpdateWorld(LoadChunkFromXMLFile(world, "WorldSaveTest"));
+            ChunkBuilder[,] loadedWorld = LoadChunkFromXMLFile(world, "WorldSaveTest");
+            Debug.Log("EOF");
+            world.UpdateWorld(loadedWorld);
         }
     }
 
@@ -43,10 +46,11 @@ public class XMLSerializer : MonoBehaviour
         xmlWriter.WriteStartElement("Root");
 
         //now we parse all our chunks' data!
-        for (int cz = 0; cz < world.m_chunks.GetLength(0); cz++)
+        for (int cz = 0; cz < world.m_worldZSize; ++cz)
         {
-            for (int cx = 0; cx < world.m_chunks.GetLength(1); cx++)
+            for (int cx = 0; cx < world.m_worldXSize; ++cx)
             {
+                //print(cx + " - " + cz);
                 //we get a reference to the chunk data
                 int[,,] voxelArray = world.m_chunks[cx, cz].m_terrainArray;
                 // Create the root element
@@ -93,29 +97,103 @@ public class XMLSerializer : MonoBehaviour
     {
         //initialise our new world
         ChunkBuilder[,] worldArray = new ChunkBuilder[world.m_worldXSize, world.m_worldZSize];
+        for (int z = 0; z < world.m_worldZSize; z++)
+        {
+            for (int x = 0; x < world.m_worldZSize; x++)
+            {
+                //create the new chunk
+                GameObject newChunk = new GameObject();
+                newChunk.name = "Chunk at: " + x + " : " + z;
+                newChunk.AddComponent<ChunkBuilder>();
+                newChunk.AddComponent<MeshGenerator>();
+
+                //customise the new chunk
+                ChunkBuilder cb = newChunk.GetComponent<ChunkBuilder>();
+                cb.m_chunkSize = world.m_chunkSize;
+                cb.m_chunkHeight = world.m_chunkHeight;
+                cb.m_world = world;
+                cb.GenerateChunk();
+                worldArray[x, z] = cb;
+            }
+        }
+        
         int[,,] vertexArray = new int[world.m_chunkSize, world.m_chunkSize, world.m_chunkSize];
 
+
         //get down to business
-        XmlReader xmlReader = XmlReader.Create(fileName + ".xml");        while (xmlReader.Read())
+        XmlDocument xmlDocument = new XmlDocument();        xmlDocument.Load(fileName + ".xml");        //bool readingChunk = false;
+
+        XmlNodeList chunks = xmlDocument.DocumentElement.ChildNodes;
+        //print(chunks.ToString());
+
+        foreach (XmlNode chunk in chunks)
+        {
+            if (chunk.HasChildNodes)
+            {
+                //get the voxel chunk data
+                cx = int.Parse(chunk.Attributes["x"].Value);
+                cz = int.Parse(chunk.Attributes["z"].Value);
+                //print("reading chunk at " + cx + " ; " + cz);
+                foreach (XmlNode voxel in chunk.ChildNodes)
+                {
+                    //print("reading voxel");
+                    x = int.Parse(voxel.Attributes["x"].Value);
+                    y = int.Parse(voxel.Attributes["y"].Value);
+                    z = int.Parse(voxel.Attributes["z"].Value);
+                    //print(voxel.FirstChild.Value);
+
+                    //print(x + "," + y + "," + z + ";");
+                    //print(worldArray[cx, cz].m_terrainArray[x, y, z]);
+
+                    int type = int.Parse(voxel.FirstChild.Value);
+                    //print(vertexArray[x, y, z]);
+                }
+            }
+            print(cx + " " + cz);
+            print(worldArray.GetLength(0));
+
+            //worldArray[cx, cz].m_terrainArray = new int[worldArray.GetLength(0), worldArray.GetLength(0), worldArray.GetLength(0)];
+            //print(worldArray[cx, cz].m_terrainArray);
+            worldArray[cx, cz].m_terrainArray = vertexArray;
+        }
+        return worldArray;
+    }
+}
+        /*
+        while (xmlReader.Read())
         {
             //loop through the chunks
             if (xmlReader.IsStartElement("VoxelChunk"))
             {
+                print("reading chunk");
                 //get the voxel chunk data
-                int cx = int.Parse(xmlReader["x"]);
-                int cz = int.Parse(xmlReader["z"]);
-                if (xmlReader.IsStartElement("Voxel"))
-                {
-                    int x = int.Parse(xmlReader["x"]);
-                    int y = int.Parse(xmlReader["y"]);
-                    int z = int.Parse(xmlReader["z"]);                    int type = int.Parse(xmlReader.Value);                    //create the chunk
-                    worldArray[cx, cz].m_terrainArray[x, y, z] = type;
-                }
-            }
+                cx = int.Parse(xmlReader["x"]);
+                cz = int.Parse(xmlReader["z"]);
+                readingChunk = true;
+            }
+
+            if (readingChunk)
+            {
+                print("reading voxel");
+                print(xmlReader.ToString());
+                x = int.Parse(xmlReader["x"]);
+                y = int.Parse(xmlReader["y"]);
+                z = int.Parse(xmlReader["z"]);
+                print(x + "," + y + "," + z + ";");
+                int type = int.Parse(xmlReader.Value);                //create the chunk
+                worldArray[cx, cz].m_terrainArray[x, y, z] = type;
+                print(worldArray[cx, cz].m_terrainArray[x, y, z]);
+                //xmlReader.Read();
+            }
+            if (xmlReader.NodeType == XmlNodeType.EndElement)
+            {
+                print(xmlReader.Value);
+                readingChunk = false;
+            }
         }
         return worldArray;
     }
-}
+    */
 
 /*
  public void Serialize()
