@@ -37,12 +37,10 @@ public class ChunkBuilder : MonoBehaviour {
         m_voxelGenerator.UpdateWorld();
 	}
 
-    public void UpdateChunk(int [,,] newTerrain)
+    public void UpdateChunk()// int [,,] newTerrain)
     {
-        m_voxelGenerator = GetComponent<MeshGenerator>();
-        m_voxelGenerator.m_parent = this;
         m_voxelGenerator.ClearPreviousData();
-        m_terrainArray = newTerrain;
+        //m_terrainArray = newTerrain;
         DisplayTerrain();
         m_voxelGenerator.UpdateWorld();
     }

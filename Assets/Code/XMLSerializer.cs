@@ -25,9 +25,11 @@ public class XMLSerializer : MonoBehaviour
             //Desirealize();
             ChunkWorldBuilder world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
             //world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
-            ChunkBuilder[,] loadedWorld = LoadChunkFromXMLFile(world, "WorldSaveTest");
+            //ChunkBuilder[,] loadedWorld = 
+            LoadChunkFromXMLFile(world, "WorldSaveTest");
             Debug.Log("EOF");
-            world.UpdateWorld(loadedWorld);
+            world.UpdateChunks();
+            //world.UpdateWorld(loadedWorld);
         }
     }
 
@@ -93,9 +95,11 @@ public class XMLSerializer : MonoBehaviour
 
     }
     // Read a voxel chunk from XML file
-    public static ChunkBuilder[,] LoadChunkFromXMLFile(ChunkWorldBuilder world, string fileName)
+    //public static ChunkBuilder[,] 
+    public void LoadChunkFromXMLFile(ChunkWorldBuilder world, string fileName)
     {
         //initialise our new world
+        /*
         ChunkBuilder[,] worldArray = new ChunkBuilder[world.m_worldXSize, world.m_worldZSize];
         for (int z = 0; z < world.m_worldZSize; z++)
         {
@@ -116,8 +120,8 @@ public class XMLSerializer : MonoBehaviour
                 worldArray[x, z] = cb;
             }
         }
-        
         int[,,] vertexArray = new int[world.m_chunkSize, world.m_chunkSize, world.m_chunkSize];
+        */
 
 
         //get down to business
@@ -145,18 +149,19 @@ public class XMLSerializer : MonoBehaviour
                     //print(x + "," + y + "," + z + ";");
                     //print(worldArray[cx, cz].m_terrainArray[x, y, z]);
 
-                    int type = int.Parse(voxel.FirstChild.Value);
+                    type = int.Parse(voxel.FirstChild.Value);
                     //print(vertexArray[x, y, z]);
                 }
             }
-            print(cx + " " + cz);
-            print(worldArray.GetLength(0));
+            world.m_chunks[cx, cz].m_terrainArray[x, y, z] = type;
+            //print(cx + " " + cz);
+            //print(worldArray.GetLength(0));
 
             //worldArray[cx, cz].m_terrainArray = new int[worldArray.GetLength(0), worldArray.GetLength(0), worldArray.GetLength(0)];
             //print(worldArray[cx, cz].m_terrainArray);
-            worldArray[cx, cz].m_terrainArray = vertexArray;
+            //worldArray[cx, cz].m_terrainArray = vertexArray;
         }
-        return worldArray;
+        //return worldArray;
     }
 }
         /*

@@ -20,11 +20,22 @@ public class ChunkWorldBuilder : MonoBehaviour
 
     void Start()
     {
-        CreateWorld();
+        CreateWorld(m_chunks);
     }
 
     void Update()
     {
+    }
+
+    public void UpdateChunks()
+    {
+        for (int z = 0; z < m_worldZSize; ++z)
+        {
+            for (int x = 0; x < m_worldXSize; ++x)
+            {
+                m_chunks[x, z].UpdateChunk();
+            }
+        }
     }
 
     public void UpdateWorld(ChunkBuilder[,] chunk)
@@ -36,14 +47,13 @@ public class ChunkWorldBuilder : MonoBehaviour
                 m_chunks[x, z] = chunk[x, z];
                 //m_chunks[x, z].m_terrainArray = chunk[x, z].m_terrainArray;
 
-                m_chunks[x, z].UpdateChunk(chunk[x, z].m_terrainArray);
             }
         }
     }
 
-    public void CreateWorld()
+    public void CreateWorld(ChunkBuilder[,] newChunks)
     {
-        m_chunks = new ChunkBuilder[m_worldXSize, m_worldZSize];
+        newChunks = new ChunkBuilder[m_worldXSize, m_worldZSize];
         for (int z = 0; z < m_worldZSize; z++)
         {
             for (int x = 0; x < m_worldZSize; x++)
@@ -63,7 +73,7 @@ public class ChunkWorldBuilder : MonoBehaviour
                 cb.m_chunkHeight = m_chunkHeight;
                 cb.m_world = this;
                 cb.GenerateChunk();
-                m_chunks[x, z] = cb;
+                newChunks[x, z] = cb;
             }
         }
 
