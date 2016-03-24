@@ -23,34 +23,6 @@ public class ChunkWorldBuilder : MonoBehaviour
         CreateWorld(m_chunks);
     }
 
-    void Update()
-    {
-    }
-
-    public void UpdateChunks()
-    {
-        for (int z = 0; z < m_worldZSize; ++z)
-        {
-            for (int x = 0; x < m_worldXSize; ++x)
-            {
-                m_chunks[x, z].UpdateChunk();
-            }
-        }
-    }
-
-    public void UpdateWorld(ChunkBuilder[,] chunk)
-    {
-        for (int z = 0; z < m_worldZSize; ++z)
-        {
-            for (int x = 0; x < m_worldXSize; ++x)
-            {
-                m_chunks[x, z] = chunk[x, z];
-                //m_chunks[x, z].m_terrainArray = chunk[x, z].m_terrainArray;
-
-            }
-        }
-    }
-
     public void CreateWorld(ChunkBuilder[,] newChunks)
     {
         newChunks = new ChunkBuilder[m_worldXSize, m_worldZSize];
@@ -79,7 +51,7 @@ public class ChunkWorldBuilder : MonoBehaviour
 
         //place the player in the middle of the chunk
         GameObject.FindWithTag("Player").transform.position = transform.position + new Vector3((m_chunkSize * m_worldXSize) / 2, 5, (m_chunkSize * m_worldZSize) / 2);
-
+        m_chunks = newChunks;
     }
 
     public void BlockChanged(m_voxelType type)//ADD AGAIN AFTER GETTING THE SOUNDS!!!

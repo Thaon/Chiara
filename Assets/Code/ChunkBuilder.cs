@@ -6,7 +6,7 @@ public enum m_voxelType { empty, grass, stone, dirt, sand };
 
 public class ChunkBuilder : MonoBehaviour {
 
-    MeshGenerator m_voxelGenerator;
+    public MeshGenerator m_voxelGenerator;
     public int[,,] m_terrainArray;
     public int m_chunkSize = 16;
     public int m_chunkHeight = 255;
@@ -37,23 +37,6 @@ public class ChunkBuilder : MonoBehaviour {
         m_voxelGenerator.UpdateWorld();
 	}
 
-    public void UpdateChunk()// int [,,] newTerrain)
-    {
-        m_voxelGenerator.ClearPreviousData();
-        //m_terrainArray = newTerrain;
-        DisplayTerrain();
-        m_voxelGenerator.UpdateWorld();
-    }
-
-    void Start()
-    {
-    }
-	
-	// Update is called once per frame
-	void Update ()
-    {
-	}
-
     void PopulateTerrain()
     {
         // iterate horizontally on width
@@ -81,7 +64,7 @@ public class ChunkBuilder : MonoBehaviour {
 
     }
 
-    void DisplayTerrain()
+    public void DisplayTerrain()
     {
         // iterate horizontally on width
         for (int x = 0; x < m_terrainArray.GetLength(0); x++)
