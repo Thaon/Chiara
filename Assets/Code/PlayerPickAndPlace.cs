@@ -8,12 +8,35 @@ public class PlayerPickAndPlace : MonoBehaviour {
 
     enum State { inventory, playing };
 
+    m_voxelType selectedBlock = m_voxelType.grass;
+    public GameObject selectedBlockUI;
+    public int m_selectedBlock = 1;
+
     State m_state = State.playing;
 
     void Update()
     {
         if (m_state == State.playing)
         {
+            //select block with 1 - 4 keys
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                m_selectedBlock = 1;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                m_selectedBlock = 2;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                m_selectedBlock = 3;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                m_selectedBlock = 4;
+            }
+
+            //remove and place blocks
             if (Input.GetButtonDown("Fire1"))
             {
                 Vector3 v;
@@ -49,8 +72,24 @@ public class PlayerPickAndPlace : MonoBehaviour {
                 Vector3 v;
                 if (PickEmptyBlock(out v, 4))
                 {
+                    m_voxelType vType = m_voxelType.grass;
+                    switch (m_selectedBlock)
+                    {
+                        case 1:
+                        vType = m_voxelType.grass;
+                        break;
+                        case 2:
+                        vType = m_voxelType.stone;
+                        break;
+                        case 3:
+                        vType = m_voxelType.dirt;
+                        break;
+                        case 4:
+                        vType = m_voxelType.sand;
+                        break;
+                    }
                     //Debug.Log(v);
-                    m_activeChunk.SetBlock(v, m_voxelType.sand);
+                    m_activeChunk.SetBlock(v, vType);
                 }
             }
             else if (Input.GetButtonUp("Inventory"))

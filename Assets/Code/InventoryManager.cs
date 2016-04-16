@@ -18,14 +18,9 @@ public class InventoryManager : MonoBehaviour
     public List<string> itemNames;
     public List<int> itemAmounts;
     // Starting template item
-    public GameObject startItem;    GameObject inventoryItem;    public GameObject SelectedBlockUI;
+    public GameObject startItem;    GameObject inventoryItem;
     List<InventoryItemScript> inventoryList;
     #endregion
-
-    void Start()
-    {
-    
-    }
 
     bool CompareName(InventoryItemScript a, InventoryItemScript b)
     {
