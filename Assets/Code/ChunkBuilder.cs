@@ -259,7 +259,7 @@ public class ChunkBuilder : MonoBehaviour {
             DisplayTerrain();
             // Update the mesh data
             m_voxelGenerator.UpdateWorld();
-            //m_world.BlockChanged(voxelType); THIS HAS TO BE IMPLEMENTED
+            m_world.BlockChanged(voxelType);
         }
     }
 

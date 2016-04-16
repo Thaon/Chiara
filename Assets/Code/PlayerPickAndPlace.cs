@@ -20,7 +20,7 @@ public class PlayerPickAndPlace : MonoBehaviour {
                 if (PickThisBlock(out v, 4))
                 {
                     int iType = m_activeChunk.m_terrainArray[(int)v.x, (int)v.y, (int)v.z];
-                    print(iType);
+                    //print(iType);
 
                     m_activeChunk.SetBlock(v, m_voxelType.empty);
 

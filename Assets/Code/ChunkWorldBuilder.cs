@@ -28,6 +28,7 @@ public class ChunkWorldBuilder : MonoBehaviour
 
         //customise the new chunk
         ChunkBuilder cb = newChunk.GetComponent<ChunkBuilder>();
+        cb.m_world = this;
         cb.m_chunkSize = m_chunkSize;
         cb.m_chunkHeight = m_chunkHeight;
         m_chunk = cb;
@@ -75,11 +76,11 @@ public class ChunkWorldBuilder : MonoBehaviour
     {
         if (type == m_voxelType.empty)
         {
-            //OnEventBlockDestroyed(m_voxelType.empty);
+            OnEventBlockDestroyed(m_voxelType.empty);
         }
         else
         {
-            //OnEventBlockPlaced(type);
+            OnEventBlockPlaced(type);
         }
     }
 }

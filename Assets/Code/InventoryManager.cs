@@ -18,7 +18,7 @@ public class InventoryManager : MonoBehaviour
     public List<string> itemNames;
     public List<int> itemAmounts;
     // Starting template item
-    public GameObject startItem;    GameObject inventoryItem;
+    public GameObject startItem;    GameObject inventoryItem;    public GameObject SelectedBlockUI;
     List<InventoryItemScript> inventoryList;
     #endregion
 

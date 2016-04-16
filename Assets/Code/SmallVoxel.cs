@@ -14,7 +14,7 @@ public class SmallVoxel : MonoBehaviour
         m_player = GameObject.Find("First Person Controller");
         rigidbody.AddForce(Vector3.up * 300);
         rigidbody.AddTorque(Vector3.up * 300);
-        print(transform.position);
+        //print(transform.position);
 
         StartCoroutine(Activate());
     }
@@ -23,20 +23,18 @@ public class SmallVoxel : MonoBehaviour
     {
         if (m_isActive)
         {
-            //using Hook's law to calculate the spring force towards the player
-            float K, X;
+           //using Hook's law to calculate the spring force towards the player
+           float X, K;
+
             K = 30; //coefficient of restitution
             X = Vector3.Distance(transform.position, m_player.transform.position); //distance
             rigidbody.AddForce((transform.position - m_player.transform.position) * -(K / X));
-        }
-    }
-
-    void OnCollisionEnter(Collision other)
-    {
-        if (other.gameObject.tag == "Player")
-        {
-            other.gameObject.GetComponent<InventoryManager>().AddItem(m_sprite, m_name, 1);
-            Destroy(this.gameObject);
+            if (X < 1) //if we are near enough, we add the item to the inventory and make it disappear
+            {
+                m_player.gameObject.GetComponent<InventoryManager>().AddItem(m_sprite, m_name, 1);
+                m_player.GetComponent<InventoryManager>().RefreshInventory();
+                Destroy(this.gameObject);
+            }
         }
     }
 
