@@ -27,6 +27,24 @@ public class InventoryManager : MonoBehaviour
     
     }
 
+    bool CompareName(InventoryItemScript a, InventoryItemScript b)
+    {
+        if (a.itemName.CompareTo(b.itemName) == -1 || a.itemName.CompareTo(b.itemName) == 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool CompareValue(InventoryItemScript a, InventoryItemScript b)
+    {
+        if (a.itemAmount >= b.itemAmount)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public void AddItem(Sprite img, string name, int amount)
     {
         //check if the item in in the list, if not, we add it, if so, we increase the amount
@@ -46,12 +64,18 @@ public class InventoryManager : MonoBehaviour
     public void RefreshInventory()
     {
         inventoryList = new List<InventoryItemScript>();
+        inventoryList.Clear();
+        foreach (GameObject invItem in GameObject.FindGameObjectsWithTag("Item"))
+        {
+            Destroy(invItem.gameObject);
+        }
         for (int i = 0; i < itemNames.Count; i++)
         {
             // Create a duplicate of the starter item
             inventoryItem = (GameObject)Instantiate(startItem);
             // UI items need to parented by the canvas or an objec within the canvas
             inventoryItem.transform.SetParent(parentPanel);
+            inventoryItem.tag = "Item";
             // Original start item is disabled – so the duplicate must be enabled
             inventoryItem.SetActive(true);
             // Get InventoryItemScript component so we can set the data
@@ -186,7 +210,15 @@ public class InventoryManager : MonoBehaviour
                 prec -= 1;
             }
             inventoryList[prec + 1] = current;
-        }        DisplayListInOrder();    }    List<InventoryItemScript> MergeSort(List<InventoryItemScript> list)
+        }        DisplayListInOrder();    }    public void MergeSortName()
+    {
+        inventoryList = MergeSort(inventoryList, CompareName);
+        DisplayListInOrder();
+    }    public void MergeSortValue()
+    {
+        inventoryList = MergeSort(inventoryList, CompareValue);
+        DisplayListInOrder();
+    }    List<InventoryItemScript> MergeSort(List<InventoryItemScript> list, CompareItems method)
     {
         //recursion exit point
         if (list.Count <= 1)
@@ -211,20 +243,20 @@ public class InventoryManager : MonoBehaviour
         //print(rightList.Count);
         //print("######");
 
-        leftList = MergeSort(leftList);
-        rightList = MergeSort(rightList);
+        leftList = MergeSort(leftList, method);
+        rightList = MergeSort(rightList, method);
 
         //post recursion step
-        list = Merge(leftList, rightList);
+        list = Merge(leftList, rightList, method);
         //print("Merged list");
         return list;
     }
-    List<InventoryItemScript> Merge(List<InventoryItemScript> leftList, List<InventoryItemScript> rightList)// ,DelegatePointer)
+    List<InventoryItemScript> Merge(List<InventoryItemScript> leftList, List<InventoryItemScript> rightList, CompareItems method)// ,DelegatePointer)
     {
         List<InventoryItemScript> merged = new List<InventoryItemScript>();
         while (leftList.Count > 0 && rightList.Count > 0)
         {
-            if (leftList[0].itemAmount <= rightList[0].itemAmount) //if (Order)
+            if (method(leftList[0], rightList[0])) //if (Order)
             {
                 merged.Add(leftList[0]);
                 leftList.RemoveAt(0);
@@ -250,9 +282,9 @@ public class InventoryManager : MonoBehaviour
         return merged;
     }
 
-    public void MergeSortInventory()
-    {
-        inventoryList = MergeSort(inventoryList);
-        DisplayListInOrder();
-    }
+    //public void MergeSortInventory()
+    //{
+    //    inventoryList = MergeSort(inventoryList);
+    //    DisplayListInOrder();
+    //}
 }
