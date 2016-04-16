@@ -7,6 +7,7 @@ public enum SortingMode { itemAmount, itemName};
 
 public class InventoryManager : MonoBehaviour
 {
+    public delegate bool CompareItems(InventoryItemScript a, InventoryItemScript b);
 
     #region member variables
 
@@ -17,17 +18,38 @@ public class InventoryManager : MonoBehaviour
     public List<string> itemNames;
     public List<int> itemAmounts;
     // Starting template item
-    public GameObject startItem;
+    public GameObject startItem;    GameObject inventoryItem;
     List<InventoryItemScript> inventoryList;
     #endregion
 
     void Start()
     {
+    
+    }
+
+    public void AddItem(Sprite img, string name, int amount)
+    {
+        //check if the item in in the list, if not, we add it, if so, we increase the amount
+        if (itemNames.Contains(name))
+        {
+            int id = itemNames.FindIndex(found => found==name); //using predicate
+            itemAmounts[id]++;
+        }
+        else
+        {
+            itemNames.Add(name);
+            itemSprites.Add(img);
+            itemAmounts.Add(amount);
+        }
+    }
+
+    public void RefreshInventory()
+    {
         inventoryList = new List<InventoryItemScript>();
         for (int i = 0; i < itemNames.Count; i++)
         {
             // Create a duplicate of the starter item
-            GameObject inventoryItem = (GameObject)Instantiate(startItem);
+            inventoryItem = (GameObject)Instantiate(startItem);
             // UI items need to parented by the canvas or an objec within the canvas
             inventoryItem.transform.SetParent(parentPanel);
             // Original start item is disabled – so the duplicate must be enabled
@@ -197,12 +219,12 @@ public class InventoryManager : MonoBehaviour
         //print("Merged list");
         return list;
     }
-    List<InventoryItemScript> Merge(List<InventoryItemScript> leftList, List<InventoryItemScript> rightList)
+    List<InventoryItemScript> Merge(List<InventoryItemScript> leftList, List<InventoryItemScript> rightList)// ,DelegatePointer)
     {
         List<InventoryItemScript> merged = new List<InventoryItemScript>();
         while (leftList.Count > 0 && rightList.Count > 0)
         {
-            if (leftList[0].itemAmount <= rightList[0].itemAmount)
+            if (leftList[0].itemAmount <= rightList[0].itemAmount) //if (Order)
             {
                 merged.Add(leftList[0]);
                 leftList.RemoveAt(0);

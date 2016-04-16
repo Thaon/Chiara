@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 //making the enum available to everybody
 public enum m_voxelType { empty, grass, stone, dirt, sand };
@@ -12,7 +13,21 @@ public class ChunkBuilder : MonoBehaviour {
     public int m_chunkHeight = 255;
     public ChunkWorldBuilder m_world;
 
+    Sprite m_grassSpr;
+    Sprite m_dirtSpr;
+    Sprite m_sandSpr;
+    Sprite m_stoneSpr;
+
+
     public GameObject m_player;
+
+    void Start()
+    {
+        m_grassSpr = Resources.Load<Sprite>("Grass");
+        m_dirtSpr = Resources.Load<Sprite>("Dirt");
+        m_sandSpr = Resources.Load<Sprite>("Sand");
+        m_stoneSpr = Resources.Load<Sprite>("Stone");
+    }
 
 	// Use this for initialization
 	public void GenerateChunk ()
@@ -36,6 +51,26 @@ public class ChunkBuilder : MonoBehaviour {
         //finish up the model
         m_voxelGenerator.UpdateWorld();
 	}
+
+    public void UpdateChunk()
+    {
+        m_voxelGenerator = GetComponent<MeshGenerator>();
+        //we now set the parent
+        m_voxelGenerator.m_parent = this;
+
+        //m_terrainArray = new int[m_chunkSize, m_chunkHeight, m_chunkSize];
+
+        m_voxelGenerator.ClearPreviousData();
+
+        //do terrain modifications here
+        //CreatePath();
+
+        DisplayTerrain();
+
+
+        //finish up the model
+        m_voxelGenerator.UpdateWorld();
+    }
 
     void PopulateTerrain()
     {
@@ -224,7 +259,68 @@ public class ChunkBuilder : MonoBehaviour {
             DisplayTerrain();
             // Update the mesh data
             m_voxelGenerator.UpdateWorld();
-            m_world.BlockChanged(voxelType);
+            //m_world.BlockChanged(voxelType); THIS HAS TO BE IMPLEMENTED
         }
+    }
+
+    public void SpawnSmallVoxel(Vector3 index, m_voxelType voxelType)
+    {
+        GameObject voxel = new GameObject();
+        voxel.AddComponent<MeshGenerator>();
+        voxel.AddComponent<Rigidbody>();
+        voxel.GetComponent<MeshCollider>().convex = true;
+        voxel.AddComponent<SmallVoxel>();
+
+        voxel.transform.position = index;
+        voxel.transform.Translate(0.25f, 0, 0.25f); //center the voxel
+
+        voxel.GetComponent<MeshGenerator>().WorldInit();
+        //print(voxel.transform.position);
+
+        //get texture
+        string tex;
+        Sprite spr;
+        switch (voxelType)
+        {
+            case m_voxelType.grass:
+            tex = "Grass";
+            spr = m_grassSpr;
+            break;
+            case m_voxelType.stone:
+            tex = "Stone";
+            spr = m_stoneSpr;
+            break;
+            case m_voxelType.dirt:
+            tex = "Dirt";
+            spr = m_dirtSpr;
+            break;
+            case m_voxelType.sand:
+            tex = "Sand";
+            spr = m_sandSpr;
+            break;
+            default:
+            tex = "Grass";
+            spr = m_grassSpr;
+            break;
+        }
+        //print(voxelType);
+        voxel.GetComponent<MeshGenerator>().m_voxelScale = 0.5f;
+        //x
+        voxel.GetComponent<MeshGenerator>().CreateNegativeXFace(0,0,0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+        voxel.GetComponent<MeshGenerator>().CreatePositiveXFace(0, 0, 0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+        //y
+        voxel.GetComponent<MeshGenerator>().CreateNegativeYFace(0, 0, 0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+        voxel.GetComponent<MeshGenerator>().CreatePositiveYFace(0, 0, 0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+        //z
+        voxel.GetComponent<MeshGenerator>().CreateNegativeZFace(0, 0, 0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+        voxel.GetComponent<MeshGenerator>().CreatePositiveZFace(0, 0, 0, voxel.GetComponent<MeshGenerator>().GetAssociatedVector(tex));
+
+        voxel.GetComponent<MeshGenerator>().UpdateWorld();
+        //print(voxel.transform.position);
+
+        voxel.GetComponent<SmallVoxel>().m_sprite = spr;
+        voxel.GetComponent<SmallVoxel>().m_name = tex;
+
+        voxel = null; //lose reference to the voxel
     }
 }

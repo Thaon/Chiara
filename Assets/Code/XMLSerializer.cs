@@ -7,6 +7,7 @@ public class XMLSerializer : MonoBehaviour
 {
     static int cx, cz, x, y, z, type;
     static ChunkWorldBuilder world;
+    public string m_fileName = "WorldSaveTest";
 
     void Start()
     {
@@ -18,38 +19,22 @@ public class XMLSerializer : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
         {
             //Serialize();
-            SaveChunkToXMLFile(world, "WorldSaveTest");
-            print(world.m_chunks[0, 0].m_terrainArray);
-
+            SaveChunkToXMLFile(world.m_chunkSize, m_fileName);
+            //print(world.m_chunks[0, 0].m_terrainArray);
         }
+
         if (Input.GetKeyDown(KeyCode.F2))
         {
-            //Desirealize();
-            //world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
-            //ChunkBuilder[,] loadedWorld = 
-            world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
-            //print(world.m_chunks[0, 0].m_terrainArray);
-            Debug.Log("EOF");
-            /*
-            foreach(ChunkBuilder chunk in world.m_chunks)
-            {
-                //clear the previous mesh data
-                chunk.m_voxelGenerator.ClearPreviousData();
-                // Change the block to the required type
-                chunk.m_terrainArray =;
-                // Create the new mesh
-                chunk.DisplayTerrain();
-                // Update the mesh data
-                chunk.m_voxelGenerator.UpdateWorld();
-            }
-            */
-            //world.UpdateWorld(loadedWorld);
+            world.m_chunk.m_terrainArray = LoadChunkFromXMLFile(world.m_chunkSize, m_fileName);
+            // Draw the correct faces
+            world.m_chunk.UpdateChunk();
         }
     }
 
     // Write a voxel chunk to XML file
-    public static void SaveChunkToXMLFile(ChunkWorldBuilder world, string fileName)
+    public static void SaveChunkToXMLFile(int size, string fileName)
     {
+        int[,,] voxelArray = world.m_chunk.m_terrainArray;
         //setup the writing style
         XmlWriterSettings writerSettings = new XmlWriterSettings();
         writerSettings.Indent = true;
@@ -59,43 +44,28 @@ public class XMLSerializer : MonoBehaviour
         // Write the beginning of the document
         xmlWriter.WriteStartDocument();
 
-        xmlWriter.WriteStartElement("Root");
+        xmlWriter.WriteStartElement("VoxelChunk");
 
         //now we parse all our chunks' data!
-        for (int cz = 0; cz < world.m_worldZSize; ++cz)
+
+        //then we write all of the coordinates of the chunk at that location
+        for (int x = 0; x < voxelArray.GetLength(0); x++)
         {
-            for (int cx = 0; cx < world.m_worldXSize; ++cx)
+            for (int y = 0; y < voxelArray.GetLength(1); y++)
             {
-                //print(cx + " - " + cz);
-                //we get a reference to the chunk data
-                int[,,] voxelArray = world.m_chunks[cx, cz].m_terrainArray;
-                // Create the root element
-                xmlWriter.WriteStartElement("VoxelChunk");
-                //write it's coordinates
-                xmlWriter.WriteAttributeString("x", cx.ToString());
-                xmlWriter.WriteAttributeString("z", cz.ToString());
-                //then we write all of the coordinates of the chunk at that location
-                for (int x = 0; x < voxelArray.GetLength(0); x++)
+                for (int z = 0; z < voxelArray.GetLength(2); z++)
                 {
-                    for (int y = 0; y < voxelArray.GetLength(1); y++)
+                    if (voxelArray[x, y, z] != 0)
                     {
-                        for (int z = 0; z < voxelArray.GetLength(2); z++)
-                        {
-                            if (voxelArray[x, y, z] != 0)
-                            {
-                                // Create a single voxel element
-                                xmlWriter.WriteStartElement("Voxel");
-                                xmlWriter.WriteAttributeString("x", x.ToString());
-                                xmlWriter.WriteAttributeString("y", y.ToString());
-                                xmlWriter.WriteAttributeString("z", z.ToString());
-                                xmlWriter.WriteString(voxelArray[x, y, z].ToString());
-                                xmlWriter.WriteEndElement();
-                            }
-                        }
+                        // Create a single voxel element
+                        xmlWriter.WriteStartElement("Voxel");
+                        xmlWriter.WriteAttributeString("x", x.ToString());
+                        xmlWriter.WriteAttributeString("y", y.ToString());
+                        xmlWriter.WriteAttributeString("z", z.ToString());
+                        xmlWriter.WriteString(voxelArray[x, y, z].ToString());
+                        xmlWriter.WriteEndElement();
                     }
                 }
-                //end current chunk
-                xmlWriter.WriteEndElement();
             }
         }
         Debug.Log("EOF");
@@ -105,14 +75,54 @@ public class XMLSerializer : MonoBehaviour
         xmlWriter.WriteEndDocument();
         // Close the document to save
         xmlWriter.Close();
-
-
     }
     // Read a voxel chunk from XML file
     //public static ChunkBuilder[,] 
-    public ChunkBuilder[,] LoadChunkFromXMLFile(ChunkWorldBuilder world, string fileName)
+    public int[,,] LoadChunkFromXMLFile(int size, string fileName)
     {
-        //ChunkBuilder[,] worldArray = new ChunkBuilder[world.m_worldXSize, world.m_worldZSize];
+        int[,,] voxelArray = new int[size, size, size];
+
+        XmlReader xmlReader = XmlReader.Create(fileName + ".xml");
+
+        while (xmlReader.Read())
+        {
+            if (xmlReader.IsStartElement("Voxel"))
+            {
+                int x = int.Parse(xmlReader["x"]);
+                int y = int.Parse(xmlReader["y"]);
+                int z = int.Parse(xmlReader["z"]);
+                xmlReader.Read();
+                int value = int.Parse(xmlReader.Value);
+                //m_voxelType type;
+                //switch (value)
+                //{
+                //    case 0:
+                //    type = m_voxelType.empty;
+                //    break;
+                //    case 1:
+                //    type = m_voxelType.grass;
+                //    break;
+                //    case 2:
+                //    type = m_voxelType.stone;
+                //    break;
+                //    case 3:
+                //    type = m_voxelType.dirt;
+                //    break;
+                //    case 4:
+                //    type = m_voxelType.sand;
+                //    break;
+                //}
+                voxelArray[x, y, z] = value;
+                //print(x + "-" + y + "-" + z);
+            }
+        }
+        print("EOF!");
+        return voxelArray;
+    }
+}
+/*
+
+    //ChunkBuilder[,] worldArray = new ChunkBuilder[world.m_worldXSize, world.m_worldZSize];
         //delete previous chunks
         //create new chunks from ChunkWorldBuilder
 
@@ -163,41 +173,61 @@ public class XMLSerializer : MonoBehaviour
             //worldArray[cx, cz].m_terrainArray = new int[worldArray.GetLength(0), worldArray.GetLength(0), worldArray.GetLength(0)];
             //print(worldArray[cx, cz].m_terrainArray);
             //worldArray[cx, cz].m_terrainArray = vertexArray;
-        }
-        return world.m_chunks;
-    }
-}
+
+            //if (Input.GetKeyDown(KeyCode.F2))
+        //{
+        //    //Desirealize();
+        //    //world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
+        //    //ChunkBuilder[,] loadedWorld = 
+        //    //world.m_chunks = LoadChunkFromXMLFile(world, "WorldSaveTest");
+        //    //print(world.m_chunks[0, 0].m_terrainArray);
+        //    //Debug.Log("EOF");
+        //    /*
+        //    foreach(ChunkBuilder chunk in world.m_chunks)
+        //    {
+        //        //clear the previous mesh data
+        //        chunk.m_voxelGenerator.ClearPreviousData();
+        //        // Change the block to the required type
+        //        chunk.m_terrainArray =;
+        //        // Create the new mesh
+        //        chunk.DisplayTerrain();
+        //        // Update the mesh data
+        //        chunk.m_voxelGenerator.UpdateWorld();
+        //    }
+        //    */
+//    //world.UpdateWorld(loadedWorld);
+//}
 /*
 while (xmlReader.Read())
 {
-    //loop through the chunks
-    if (xmlReader.IsStartElement("VoxelChunk"))
-    {
-        print("reading chunk");
-        //get the voxel chunk data
-        cx = int.Parse(xmlReader["x"]);
-        cz = int.Parse(xmlReader["z"]);
-        readingChunk = true;
-    }
+//loop through the chunks
+if (xmlReader.IsStartElement("VoxelChunk"))
+{
+print("reading chunk");
+//get the voxel chunk data
+cx = int.Parse(xmlReader["x"]);
+cz = int.Parse(xmlReader["z"]);
+readingChunk = true;
+}
 
-    if (readingChunk)
-    {
-        print("reading voxel");
-        print(xmlReader.ToString());
-        x = int.Parse(xmlReader["x"]);
-        y = int.Parse(xmlReader["y"]);
-        z = int.Parse(xmlReader["z"]);
-        print(x + "," + y + "," + z + ";");
-        int type = int.Parse(xmlReader.Value);                //create the chunk
-        worldArray[cx, cz].m_terrainArray[x, y, z] = type;
-        print(worldArray[cx, cz].m_terrainArray[x, y, z]);
-        //xmlReader.Read();
-    }
-    if (xmlReader.NodeType == XmlNodeType.EndElement)
-    {
-        print(xmlReader.Value);
-        readingChunk = false;
-    }
+if (readingChunk)
+{
+print("reading voxel");
+print(xmlReader.ToString());
+x = int.Parse(xmlReader["x"]);
+y = int.Parse(xmlReader["y"]);
+z = int.Parse(xmlReader["z"]);
+print(x + "," + y + "," + z + ";");
+int type = int.Parse(xmlReader.Value);                //create the chunk
+worldArray[cx, cz].m_terrainArray[x, y, z] = type;
+print(worldArray[cx, cz].m_terrainArray[x, y, z]);
+//xmlReader.Read();
+}
+if (xmlReader.NodeType == XmlNodeType.EndElement)
+{
+print(xmlReader.Value);
+readingChunk = false;
+}
 }
 return worldArray;
 }
