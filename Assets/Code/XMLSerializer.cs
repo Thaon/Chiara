@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -8,10 +10,21 @@ public class XMLSerializer : MonoBehaviour
     static int cx, cz, x, y, z, type;
     static ChunkWorldBuilder world;
     public string m_fileName = "WorldSaveTest";
+    public Vector3 start, end;
+    public GameObject m_cube;
+    Stack<Vector3> m_path;
+    List<Vector3> m_shortestPath;
+    bool m_isTraversing = false;
+
 
     void Start()
     {
+        m_shortestPath = new List<Vector3>();
         world = (ChunkWorldBuilder)FindObjectOfType(typeof(ChunkWorldBuilder));
+        if (GameObject.Find("World"))
+        {
+            m_fileName = "";
+        }
     }
 
     void Update()
@@ -25,7 +38,7 @@ public class XMLSerializer : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.F2))
         {
-            world.m_chunk.m_terrainArray = LoadChunkFromXMLFile(world.m_chunkSize, m_fileName);
+            world.m_chunk.m_terrainArray = LoadChunkFromXMLFile(world.m_chunkSize, m_fileName);
             // Draw the correct faces
             world.m_chunk.UpdateChunk();
         }
@@ -76,8 +89,8 @@ public class XMLSerializer : MonoBehaviour
         // Close the document to save
         xmlWriter.Close();
     }
+    
     // Read a voxel chunk from XML file
-    //public static ChunkBuilder[,] 
     public int[,,] LoadChunkFromXMLFile(int size, string fileName)
     {
         int[,,] voxelArray = new int[size, size, size];
@@ -118,6 +131,161 @@ public class XMLSerializer : MonoBehaviour
         }
         print("EOF!");
         return voxelArray;
+    }
+
+    public static bool ReadStartAndEndPosition(out Vector3 start, out Vector3 end, string fileName)
+    {
+        bool foundStart = false;
+        bool foundEnd = false;
+        start = new Vector3(-1, -1, -1);
+        end = new Vector3(-1, -1, -1);
+        // Create an XML reader with the file supplied
+        XmlReader xmlReader = XmlReader.Create(fileName + ".xml");
+        // Iterate through and read every line in the XML file
+        while (xmlReader.Read())
+        {
+            // Check if this node is a start element
+            if (xmlReader.IsStartElement("start"))
+            {
+                // Retrieve attributes and store as int
+                int x = int.Parse(xmlReader["x"]);
+                int y = int.Parse(xmlReader["y"]);
+                int z = int.Parse(xmlReader["z"]);
+                start = new Vector3(x, y, z);
+                foundStart = true;
+            }
+            // Check if this node is an end element
+            if (xmlReader.IsStartElement("end"))
+            {
+                // Retrieve attributes and store as int
+                int x = int.Parse(xmlReader["x"]);
+                int y = int.Parse(xmlReader["y"]);
+                int z = int.Parse(xmlReader["z"]);
+                end = new Vector3(x, y, z);
+                foundEnd = true;
+            }
+        }
+        print(start);
+        print(end);
+        return foundStart && foundEnd;
+    }
+
+    public void LoadFileWithName()
+    {
+        InputField inputField = GameObject.Find("FileNameIF").GetComponent<InputField>();
+        m_fileName = inputField.text;
+        if (m_fileName != "")
+        {
+            //since this method can only be called from scene 2, we assume we have the chunkWorldBuilder component
+            GetComponent<ChunkWorldBuilder>().m_chunk.m_terrainArray = LoadChunkFromXMLFile(16, m_fileName);
+            GetComponent<ChunkWorldBuilder>().m_chunk.UpdateChunk();
+            //set up start and end nodes
+            Vector3 s, e;
+            if (ReadStartAndEndPosition(out s, out e, m_fileName))
+            {
+                start = s;
+                end = e;
+            }
+        }
+    }
+
+    public void PathFindShortest()
+    {
+        Pathfinder pf = FindObjectOfType(typeof(Pathfinder)) as Pathfinder;
+        m_path = new Stack<Vector3>();
+        m_path = pf.BreadthFirstSearch(start, end, world.m_chunk, true);
+        m_shortestPath.Clear();
+        while (m_path.Count > 0)
+        {
+            m_shortestPath.Add(m_path.Pop());
+        }
+    }
+
+    public void PathFindShortestNoDirt()
+    {
+        Pathfinder pf = FindObjectOfType(typeof(Pathfinder)) as Pathfinder;
+        m_path = new Stack<Vector3>();
+        m_path = pf.BreadthFirstSearch(start, end, world.m_chunk, false);
+        m_shortestPath.Clear();
+        while (m_path.Count > 0)
+        {
+            m_shortestPath.Add(m_path.Pop());
+        }
+    }
+
+    //public void PathFindQuickest()
+    //{
+    //    Pathfinder pf = FindObjectOfType(typeof(Pathfinder)) as Pathfinder;
+    //    m_path = new List<Node>();
+    //    m_path = pf.PathFind(world.m_chunk.m_terrainArray, start, end, TraversingMode.quickest);
+    //}
+
+    public void DumpPath()
+    {
+        m_cube.SetActive(false); //set to false and then true to make the original Cube not findable (Find and FindGameObjectsWithTag cannot find non-active GameObjects)
+        if (GameObject.FindWithTag("Cube"))
+        {
+            foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+            {
+                Destroy(cube.gameObject);
+            }
+        }
+        m_cube.SetActive(true);
+
+        foreach (Vector3 node in m_shortestPath)
+        {
+            Instantiate(m_cube, node, Quaternion.identity);
+        }
+    }
+
+    public void LerpPath()
+    {
+        // Only allow traversal if we are not currently traversing
+        if (!m_isTraversing)
+        {
+            m_cube.SetActive(false);
+            if (GameObject.FindWithTag("Cube"))
+            {
+                foreach (GameObject cube in GameObject.FindGameObjectsWithTag("Cube"))
+                {
+                    Destroy(cube.gameObject);
+                }
+            }
+            m_cube.SetActive(true);
+
+            //Lerp
+            StartCoroutine(LerpAlongPath(m_shortestPath));
+        }
+    }
+
+    IEnumerator LerpAlongPath(List<Vector3> path)
+    {
+        m_isTraversing = true;
+        float lerpTime = 1.0f;
+
+        // Pop first waypoint off as the starting point
+        Vector3 current = m_shortestPath[0];
+        m_shortestPath.RemoveAt(0);
+        m_cube.transform.position = current;
+
+        // While there are still elements in our stack
+        while (path.Count > 0)
+        {
+            Vector3 target = m_shortestPath[0];
+            m_shortestPath.RemoveAt(0);
+            float currentTime = 0.0f;
+            // Lerp to our next waypoint unitl time has elapsed
+            while (currentTime < lerpTime)
+            {
+                currentTime += Time.deltaTime;
+                m_cube.transform.position = Vector3.Lerp(
+                current, target, currentTime / lerpTime);
+                yield return 0;
+            }
+            // Set to exact position when lerp time is over
+            m_cube.transform.position = target;
+            current = target;
+        }        m_isTraversing = false;
     }
 }
 /*

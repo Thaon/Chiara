@@ -25,6 +25,10 @@ public class ChunkWorldBuilder : MonoBehaviour
         newChunk.name = "Chunk at: " + 0 + " : " + 0;
         newChunk.AddComponent<ChunkBuilder>();
         newChunk.AddComponent<MeshGenerator>();
+        if (Application.loadedLevel == 4) //we only add the network view if necessary
+        {
+            newChunk.AddComponent<NetworkView>();
+        }
 
         //customise the new chunk
         ChunkBuilder cb = newChunk.GetComponent<ChunkBuilder>();
@@ -32,17 +36,20 @@ public class ChunkWorldBuilder : MonoBehaviour
         cb.m_chunkSize = m_chunkSize;
         cb.m_chunkHeight = m_chunkHeight;
         m_chunk = cb;
-        cb.GenerateChunk();
+        //cb.GenerateChunk();
 
         //place player in the middle of it
-        GameObject.FindWithTag("Player").transform.position = transform.position + new Vector3(m_chunkSize / 2, 5, m_chunkSize/ 2);
+        if (GameObject.FindWithTag("Player"))
+        {
+            GameObject.FindWithTag("Player").transform.position = transform.position + new Vector3(m_chunkSize / 2, 7, m_chunkSize/ 2);
+        }
 
 
         //CreateWorld(m_chunks);
     }
 
-    public void CreateWorld()//ChunkBuilder[,] newChunks)
-    {
+    //public void CreateWorld()//ChunkBuilder[,] newChunks)
+    //{
         //newChunks = new ChunkBuilder[m_worldXSize, m_worldZSize];
         //for (int z = 0; z < m_worldZSize; z++)
         //{
@@ -70,7 +77,7 @@ public class ChunkWorldBuilder : MonoBehaviour
         //place the player in the middle of the chunk
         //GameObject.FindWithTag("Player").transform.position = transform.position + new Vector3((m_chunkSize * m_worldXSize) / 2, 5, (m_chunkSize * m_worldZSize) / 2);
         //m_chunks = newChunks;
-    }
+    //}
 
     public void BlockChanged(m_voxelType type)//ADD AGAIN AFTER GETTING THE SOUNDS!!!
     {

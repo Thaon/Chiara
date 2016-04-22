@@ -22,6 +22,18 @@ public class InventoryManager : MonoBehaviour
     List<InventoryItemScript> inventoryList;
     #endregion
 
+    void Start()
+    {
+        if (itemSprites.Count > 0) //if the list has been populated by hand, we just display it
+        {
+            for (int item = 0; item < itemSprites.Count; item++)
+            {
+                AddItem(itemSprites[item], itemNames[item], itemAmounts[item]);
+            }
+            RefreshInventory();
+        }
+    }
+
     bool CompareName(InventoryItemScript a, InventoryItemScript b)
     {
         if (a.itemName.CompareTo(b.itemName) == -1 || a.itemName.CompareTo(b.itemName) == 0)
@@ -33,7 +45,7 @@ public class InventoryManager : MonoBehaviour
 
     bool CompareValue(InventoryItemScript a, InventoryItemScript b)
     {
-        if (a.itemAmount >= b.itemAmount)
+        if (a.itemAmount <= b.itemAmount)
         {
             return true;
         }
@@ -60,7 +72,8 @@ public class InventoryManager : MonoBehaviour
     {
         inventoryList = new List<InventoryItemScript>();
         inventoryList.Clear();
-        foreach (GameObject invItem in GameObject.FindGameObjectsWithTag("Item"))
+
+        foreach (GameObject invItem in GameObject.FindGameObjectsWithTag("Item")) //remove items from the scene, or we get duplicates
         {
             Destroy(invItem.gameObject);
         }
@@ -83,11 +96,10 @@ public class InventoryManager : MonoBehaviour
             // Keep a list of the inventory items
             inventoryList.Add(iis);
         }
-
         DisplayListInOrder();
     }
 
-    void DisplayListInOrder()
+    public void DisplayListInOrder()
     {
         // Height of item plus space between each
         float yOffset = 55f;

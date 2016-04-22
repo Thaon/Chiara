@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-
+using System.Collections;
+using System.Text;
 //making the enum available to everybody
-public enum m_voxelType { empty, grass, stone, dirt, sand };
+public enum m_voxelType { empty, grass, dirt, stone, sand };
 
 public class ChunkBuilder : MonoBehaviour {
 
@@ -27,26 +27,40 @@ public class ChunkBuilder : MonoBehaviour {
         m_dirtSpr = Resources.Load<Sprite>("Dirt");
         m_sandSpr = Resources.Load<Sprite>("Sand");
         m_stoneSpr = Resources.Load<Sprite>("Stone");
+
+        m_voxelGenerator = GetComponent<MeshGenerator>();
+        //we now set the parent
+        m_voxelGenerator.m_parent = this;
+        m_voxelGenerator.WorldInit();
+
+        if (networkView != null)
+        {
+            if (!networkView.isMine)
+            {
+                networkView.RPC("RequestTerrain", networkView.owner, Network.player);
+            }
+            else
+            {
+                GenerateChunk();
+            }
+        }
+        else
+        {
+            GenerateChunk();
+        }
     }
 
 	// Use this for initialization
 	public void GenerateChunk ()
     {
-        m_voxelGenerator = GetComponent<MeshGenerator>();
-        //we now set the parent
-        m_voxelGenerator.m_parent = this;
-
         m_terrainArray = new int[m_chunkSize, m_chunkHeight, m_chunkSize];
 
-        m_voxelGenerator.WorldInit();
-        
         PopulateTerrain();
 
         //do terrain modifications here
         //CreatePath();
 
         DisplayTerrain();
-
 
         //finish up the model
         m_voxelGenerator.UpdateWorld();
@@ -247,6 +261,40 @@ public class ChunkBuilder : MonoBehaviour {
         else return "NULL";
     }
 
+
+    [RPC] public void SetBlock(Vector3 index, int voxelType) //overloading for the network scene (as enums are not serialisable)
+    {
+        if ((index.x >= 0 && index.x < m_terrainArray.GetLength(0)) && (index.y >= 0 && index.y < m_terrainArray.GetLength(1)) && (index.z >= 0 && index.z < m_terrainArray.GetLength(2)))
+        {
+            //clear the previous mesh data
+            m_voxelGenerator.ClearPreviousData();
+            // Change the block to the required type
+            m_terrainArray[(int)index.x, (int)index.y, (int)index.z] = (int)voxelType;
+            // Create the new mesh
+            DisplayTerrain();
+            // Update the mesh data
+            m_voxelGenerator.UpdateWorld();
+
+            m_voxelType vType = m_voxelType.grass;
+            switch(voxelType)
+            {
+                case 1:
+                vType = m_voxelType.grass;
+                break;
+                case 2:
+                vType = m_voxelType.dirt;
+                break;
+                case 3:
+                vType = m_voxelType.stone;
+                break;
+                case 4:
+                vType = m_voxelType.sand;
+                break;
+            }
+            m_world.BlockChanged(vType);
+        }
+    }
+
     public void SetBlock(Vector3 index, m_voxelType voxelType)
     {
         if ((index.x >= 0 && index.x < m_terrainArray.GetLength(0)) && (index.y >= 0 && index.y < m_terrainArray.GetLength(1)) && (index.z >= 0 && index.z < m_terrainArray.GetLength(2)))
@@ -322,5 +370,57 @@ public class ChunkBuilder : MonoBehaviour {
         voxel.GetComponent<SmallVoxel>().m_name = tex;
 
         voxel = null; //lose reference to the voxel
+    }
+    byte[] SerialiseTerrainToByteArray()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int x = 0; x < m_terrainArray.GetLength(0); x++)
+        {
+            for (int y = 0; y < m_terrainArray.GetLength(1); y++)
+            {
+                for (int z = 0; z < m_terrainArray.GetLength(2); z++)
+                {
+                    if (m_terrainArray[x, y, z] != 0)
+                    {
+                        sb.Append(x + " " + y + " " + z + " " + m_terrainArray[x, y, z] + " ");
+                    }
+                }
+            }
+        }
+        byte[] byteArray =
+       Encoding.UTF8.GetBytes(sb.ToString());
+        return byteArray;
     }
+
+    void DeserialiseByteArrayToTerrain(byte[] byteArray)
+    {
+        // Clear all array values to zero
+        m_terrainArray = new int[m_chunkSize, m_chunkSize, m_chunkSize];
+        // convert the byte array into a string for easier processing
+        string terrainString = Encoding.UTF8.GetString(byteArray);
+        string[] values = terrainString.Split(' ');
+        //print(values.Length);
+        for (int i = 0; i < values.Length - 4; i += 4)
+        {
+            //print("x = " + values[i]);
+            int x = int.Parse(values[i]);
+            int y = int.Parse(values[i + 1]);
+            int z = int.Parse(values[i + 2]);
+            int v = int.Parse(values[i + 3]);
+            //print("v = " + values[i + 3]);
+            m_terrainArray[x, y, z] = v;
+        }
+        DisplayTerrain();
+        m_voxelGenerator.UpdateWorld();
+    }
+    [RPC]
+    void SendTerrainToClient(byte[] b)
+    {
+        DeserialiseByteArrayToTerrain(b);
+    }    [RPC]
+    void RequestTerrain(NetworkPlayer client)
+    {
+        byte[] terrain = SerialiseTerrainToByteArray();
+        networkView.RPC("SendTerrainToClient", client, terrain);
+    }
 }

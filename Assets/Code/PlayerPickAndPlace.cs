@@ -13,9 +13,45 @@ public class PlayerPickAndPlace : MonoBehaviour {
     public int m_selectedBlock = 1;
 
     State m_state = State.playing;
+    State m_previousState;
 
     void Update()
     {
+        if (m_state != m_previousState) //if we changed state
+        {
+            if (m_state == State.inventory)
+            {
+                GetComponent<FPSInputController>().enabled = false;
+                GetComponent<CharacterMotor>().enabled = false;
+                foreach (MouseLook ml in GetComponentsInChildren<MouseLook>())
+                {
+                    ml.enabled = false;
+                }
+
+                Screen.showCursor = true;
+                Screen.lockCursor = false;
+                m_inventoryCanvas.SetActive(true);
+                GetComponent<InventoryManager>().RefreshInventory();
+            }
+
+            if (m_state == State.playing)
+            {
+                
+                GetComponent<FPSInputController>().enabled = true;
+                GetComponent<CharacterMotor>().enabled = true;
+                foreach (MouseLook ml in GetComponentsInChildren<MouseLook>())
+                {
+                    ml.enabled = true;
+                }
+
+                Screen.showCursor = false;
+                Screen.lockCursor = true;
+                m_inventoryCanvas.SetActive(false);
+            }
+
+            m_previousState = m_state;
+        }
+
         if (m_state == State.playing)
         {
             //select block with 1 - 4 keys
@@ -54,10 +90,10 @@ public class PlayerPickAndPlace : MonoBehaviour {
                         vType = m_voxelType.grass;
                         break;
                         case 2:
-                        vType = m_voxelType.stone;
+                        vType = m_voxelType.dirt;
                         break;
                         case 3:
-                        vType = m_voxelType.dirt;
+                        vType = m_voxelType.stone;
                         break;
                         case 4:
                         vType = m_voxelType.sand;
@@ -94,36 +130,12 @@ public class PlayerPickAndPlace : MonoBehaviour {
             }
             else if (Input.GetButtonUp("Inventory"))
             {
-                GetComponent<FPSInputController>().enabled = false;
-                GetComponent<CharacterMotor>().enabled = false;
-                foreach (MouseLook ml in GetComponentsInChildren<MouseLook>())
-                {
-                    ml.enabled = false;
-                }
-                
-                Screen.showCursor = true;
-                Screen.lockCursor = false;
-                m_inventoryCanvas.SetActive(true);
-                GetComponent<InventoryManager>().RefreshInventory();
                 m_state = State.inventory;
             }
         }
-        else
+        else if(Input.GetButtonUp("Inventory")) //if we are in the inventory screen already, we start playing
         {
-            if (Input.GetButtonUp("Inventory"))
-            {
-                GetComponent<FPSInputController>().enabled = true;
-                GetComponent<CharacterMotor>().enabled = true;
-                foreach (MouseLook ml in GetComponentsInChildren<MouseLook>())
-                {
-                    ml.enabled = true;
-                }
-
-                Screen.showCursor = false;
-                Screen.lockCursor = true;
-                m_inventoryCanvas.SetActive(false);
-                m_state = State.playing;
-            }
+            m_state = State.playing;
         }
 
     }

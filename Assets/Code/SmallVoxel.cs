@@ -12,6 +12,11 @@ public class SmallVoxel : MonoBehaviour
 	void Start ()
     {
         m_player = GameObject.Find("First Person Controller");
+        if (m_player == null)
+        {
+            m_player = GameObject.FindWithTag("Player");
+        }
+        GetComponent<MeshCollider>().enabled = false; //disable collision until collectable
         rigidbody.AddForce(Vector3.up * 300);
         rigidbody.AddTorque(Vector3.up * 300);
         //print(transform.position);
@@ -29,10 +34,10 @@ public class SmallVoxel : MonoBehaviour
             K = 30; //coefficient of restitution
             X = Vector3.Distance(transform.position, m_player.transform.position); //distance
             rigidbody.AddForce((transform.position - m_player.transform.position) * -(K / X));
-            if (X < 1) //if we are near enough, we add the item to the inventory and make it disappear
+            if (X < 1.5) //if we are near enough, we add the item to the inventory and make it disappear
             {
                 m_player.gameObject.GetComponent<InventoryManager>().AddItem(m_sprite, m_name, 1);
-                m_player.GetComponent<InventoryManager>().RefreshInventory();
+                //m_player.GetComponent<InventoryManager>().RefreshInventory();
                 Destroy(this.gameObject);
             }
         }
@@ -42,5 +47,6 @@ public class SmallVoxel : MonoBehaviour
     {
         yield return new WaitForSeconds(.5f);
         m_isActive = true;
+        GetComponent<MeshCollider>().enabled = true;
     }
 }
